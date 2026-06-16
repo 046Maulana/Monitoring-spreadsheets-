@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SolarTrack - Dashboard Pemantauan Panel Surya</title>
+    <title>PJU Track - Dashboard Pemantauan Panel Surya PJU</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -279,9 +279,9 @@
                             </div>
                             <div>
                                 <h1 class="font-extrabold text-xl tracking-tight flex items-center gap-1.5">
-                                    SolarTrack <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.3</span>
+                                    PJU Track <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.4</span>
                                 </h1>
-                                <p class="text-xs text-gray-400">Sistem Log & Sensor Akurat</p>
+                                <p class="text-xs text-gray-400">Sistem Tracker Penerangan Jalan Umum</p>
                             </div>
                         </div>
 
@@ -392,7 +392,7 @@
                             
                             <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
                                 <span class="flex items-center tracking-wider font-semibold uppercase gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-neonGreen animate-pulse"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-neonGreen animate-pulse"></span>
                                     Daya Keluaran Saat Ini
                                 </span>
                                 <span class="text-[11px] font-mono bg-darkCardSecondary px-2.5 py-1 rounded-full text-gray-300">
@@ -591,7 +591,7 @@
                         <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/80 space-y-4">
                             <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider flex items-center gap-1.5">
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5 text-neonGreen"></i>
-                                Informasi Lingkungan & Lokasi
+                                Informasi Lingkungan & Lokasi PJU
                             </h4>
 
                             <div class="grid grid-cols-2 gap-3 bg-darkBg p-3 rounded-2xl border border-gray-800/50">
@@ -618,7 +618,7 @@
                             </div>
 
                             <div class="p-3 bg-darkBg rounded-2xl border border-gray-800/50 text-[11px] text-gray-400 space-y-1">
-                                <div class="text-[9px] text-gray-500 font-bold uppercase">ALAMAT SISTEM</div>
+                                <div class="text-[9px] text-gray-500 font-bold uppercase">ALAMAT SISTEM PJU</div>
                                 <p class="text-white font-medium">{latestLog.alamat || 'Tidak Terdeteksi'}</p>
                                 <div class="text-[9px] text-neonGreen font-mono mt-1">
                                     Lat: {latestLog.lat || '--'} | Lon: {latestLog.lon || '--'}
@@ -630,7 +630,7 @@
                         <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/80 space-y-4">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Log Riwayat Sheet</h4>
+                                    <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Log Riwayat PJU Sheet</h4>
                                     <p class="text-[9px] text-gray-500">Tabel entri riwayat urutan terbaru</p>
                                 </div>
                                 <div class="relative w-32">
@@ -678,8 +678,8 @@
 
                     {/* FOOTER BAR */}
                     <footer class="mt-8 border-t border-gray-900 bg-darkBg/95 py-6 text-center text-xs text-gray-500">
-                        <p>© 2026 SolarTrack Dashboard • Terkoneksi ke Google Sheets</p>
-                        <p class="text-[10px] text-gray-600 mt-1">Sistem Pemantauan Panel Surya Dinamis</p>
+                        <p>© 2026 PJU Track Dashboard • Terkoneksi ke Google Sheets</p>
+                        <p class="text-[10px] text-gray-600 mt-1">Sistem Pemantauan Panel Surya PJU Dinamis</p>
                     </footer>
 
                 </div>
