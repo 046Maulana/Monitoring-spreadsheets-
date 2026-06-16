@@ -35,7 +35,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Custom Style for Font & Scrollbar -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #090A0F;
@@ -85,20 +85,20 @@
             { waktu: "16/06/2026 10:16:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 0, daya: 0, energi: 0, cuaca: "803", jarakPandang: 10000, ldr: 4095, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", firebaseTime: "10:15" },
             { waktu: "16/06/2026 10:22:58", status: "MATI", mode: "OTOMATIS", arus: 0.12, tegangan: 11.8, daya: 1.41, energi: 0.2, cuaca: "803", ldr: 3950, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "10:22" },
             { waktu: "16/06/2026 11:30:15", status: "AKTIF", mode: "OTOMATIS", arus: 1.85, tegangan: 13.6, daya: 25.16, energi: 8.5, cuaca: "801", ldr: 1200, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "11:30" },
-            { waktu: "16/06/2026 11:45:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.10, tegangan: 14.1, daya: 29.61, energi: 15.2, cuaca: "800", ldr: 850, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "11:45" },
-            { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.45, tegangan: 14.4, daya: 35.28, energi: 22.4, cuaca: "800", ldr: 512, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "12:00" },
-            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "OTOMATIS", arus: 2.30, tegangan: 14.2, daya: 32.66, energi: 45.1, cuaca: "801", ldr: 720, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "13:15" },
-            { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "OTOMATIS", arus: 1.65, tegangan: 13.2, daya: 21.78, energi: 58.3, cuaca: "802", ldr: 1650, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "14:30" },
-            { waktu: "16/06/2026 15:45:10", status: "AKTIF", mode: "OTOMATIS", arus: 0.95, tegangan: 12.4, daya: 11.78, energi: 65.4, cuaca: "803", ldr: 2800, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "15:45" },
-            { waktu: "16/06/2026 16:50:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 10.5, daya: 0, energi: 68.2, cuaca: "804", ldr: 4095, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "16:50" }
+            { waktu: "16/06/2026 11:45:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.10, tegangan: 14.1, daya: 29.61, energi: 15.2, cuaca: "800", ldr: 3500, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "11:45" },
+            { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.45, tegangan: 14.4, daya: 35.28, energi: 22.4, cuaca: "800", ldr: 4095, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "12:00" },
+            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "OTOMATIS", arus: 2.30, tegangan: 14.2, daya: 32.66, energi: 45.1, cuaca: "801", ldr: 3800, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "13:15" },
+            { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "OTOMATIS", arus: 1.65, tegangan: 13.2, daya: 21.78, energi: 58.3, cuaca: "802", ldr: 2600, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "14:30" },
+            { waktu: "16/06/2026 15:45:10", status: "AKTIF", mode: "OTOMATIS", arus: 0.95, tegangan: 12.4, daya: 11.78, energi: 65.4, cuaca: "803", ldr: 1500, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "15:45" },
+            { waktu: "16/06/2026 16:50:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 10.5, daya: 0, energi: 68.2, cuaca: "804", ldr: 150, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "16:50" }
         ];
 
         const MOCK_CONVENTIONAL_DATA = [
             { waktu: "16/06/2026 10:16:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 0, daya: 0, energi: 0, cuaca: "803", ldr: 4095, alamat: "Situs Uji B, Sukorejo", firebaseTime: "10:15" },
-            { waktu: "16/06/2026 11:30:15", status: "AKTIF", mode: "MANUAL", arus: 1.10, tegangan: 11.5, daya: 12.65, energi: 4.2, cuaca: "801", ldr: 1450, alamat: "Situs Uji B, Sukorejo", firebaseTime: "11:30" },
-            { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "MANUAL", arus: 1.45, tegangan: 12.0, daya: 17.40, energi: 10.8, cuaca: "800", ldr: 920, alamat: "Situs Uji B, Sukorejo", firebaseTime: "12:00" },
-            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "MANUAL", arus: 1.35, tegangan: 11.8, daya: 15.93, energi: 21.3, cuaca: "801", ldr: 1100, alamat: "Situs Uji B, Sukorejo", firebaseTime: "13:15" },
-            { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "MANUAL", arus: 0.95, tegangan: 11.2, daya: 10.64, energi: 28.5, cuaca: "802", ldr: 1950, alamat: "Situs Uji B, Sukorejo", firebaseTime: "14:30" }
+            { waktu: "16/06/2026 11:30:15", status: "AKTIF", mode: "MANUAL", arus: 1.10, tegangan: 11.5, daya: 12.65, energi: 4.2, cuaca: "801", ldr: 3200, alamat: "Situs Uji B, Sukorejo", firebaseTime: "11:30" },
+            { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "MANUAL", arus: 1.45, tegangan: 12.0, daya: 17.40, energi: 10.8, cuaca: "800", ldr: 4000, alamat: "Situs Uji B, Sukorejo", firebaseTime: "12:00" },
+            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "MANUAL", arus: 1.35, tegangan: 11.8, daya: 15.93, energi: 21.3, cuaca: "801", ldr: 3100, alamat: "Situs Uji B, Sukorejo", firebaseTime: "13:15" },
+            { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "MANUAL", arus: 0.95, tegangan: 11.2, daya: 10.64, energi: 28.5, cuaca: "802", ldr: 1800, alamat: "Situs Uji B, Sukorejo", firebaseTime: "14:30" }
         ];
 
         function App() {
@@ -120,7 +120,6 @@
                 const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
                 
                 return lines.slice(1).filter(line => line.trim() !== '').map(line => {
-                    // Quick comma split handling basic quotes
                     const values = [];
                     let current = '';
                     let inQuotes = false;
@@ -137,7 +136,6 @@
                     }
                     values.push(current.trim());
 
-                    // Map values to expected fields safely
                     return {
                         waktu: values[0] || 'N/A',
                         status: values[1] || 'MATI',
@@ -148,7 +146,7 @@
                         energi: parseFloat(values[6]) || 0,
                         cuaca: values[7] || '800',
                         jarakPandang: parseInt(values[8]) || 10000,
-                        ldr: parseInt(values[9]) || 4095,
+                        ldr: parseInt(values[9]) || 0, // Default 0
                         sunrise: values[10] || '05:42',
                         sunset: values[11] || '17:23',
                         alamat: values[12] || 'Situs Lapangan',
@@ -159,31 +157,29 @@
                 });
             };
 
-            // Fetch live data from Google Sheets (published to web CSV export)
+            // Fetch live data from Google Sheets
             const fetchLiveData = async (sheetType) => {
                 setLoading(true);
                 setError(null);
                 const config = SHEET_CONFIGS[sheetType];
                 const sheetId = customSheetId || config.id;
-                // Google Sheets public CSV export link
                 const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${config.gid}`;
 
                 try {
                     const response = await fetch(url);
                     if (!response.ok) {
-                        throw new Error("Gagal mengambil data. Pastikan Google Sheet telah 'Dipublikasikan ke Web' (File -> Share -> Publish to web) dengan format CSV.");
+                        throw new Error("Gagal mengambil data dari Google Sheets.");
                     }
                     const text = await response.text();
                     const parsed = parseCSV(text);
                     if (parsed.length === 0) {
-                        throw new Error("Dokumen kosong atau format baris header tidak cocok.");
+                        throw new Error("Format data di dalam Sheet tidak cocok.");
                     }
                     setData(parsed);
                     setDataSource('live');
                 } catch (err) {
                     console.warn("Koneksi gagal, menggunakan database lokal fallback:", err.message);
                     setError(err.message);
-                    // Automatically fallback to gorgeous mock representation of their specific actual sheets
                     setData(sheetType === 'project' ? MOCK_PROJECT_DATA : MOCK_CONVENTIONAL_DATA);
                     setDataSource('fallback');
                 } finally {
@@ -191,7 +187,6 @@
                 }
             };
 
-            // Trigger fetch on selection change
             useEffect(() => {
                 fetchLiveData(selectedSheet);
             }, [selectedSheet]);
@@ -199,20 +194,19 @@
             // Latest logged row
             const latestLog = useMemo(() => {
                 if (!data || data.length === 0) return {};
-                return data[data.length - 1]; // active row is the newest record (usually bottom of sheet)
+                return data[data.length - 1];
             }, [data]);
 
             // Calculate overall analytics
             const summaryStats = useMemo(() => {
-                if (!data || data.length === 0) return { avgDaya: 0, peakDaya: 0, totalEnergy: 0, averageEfficiency: 0 };
+                if (!data || data.length === 0) return { avgDaya: 0, peakDaya: 0, totalEnergy: 0, progressPersen: 0 };
                 
                 const dayas = data.map(d => d.daya).filter(val => !isNaN(val));
-                const totalEnergy = data[data.length - 1]?.energi || dayas.reduce((acc, curr) => acc + curr, 0) * 0.016; // estimation if energy is 0
+                const totalEnergy = data[data.length - 1]?.energi || dayas.reduce((acc, curr) => acc + curr, 0) * 0.016;
                 const peakDaya = Math.max(...dayas, 0);
                 const avgDaya = dayas.reduce((acc, c) => acc + c, 0) / (dayas.length || 1);
                 
-                // Progres target (contoh target harian 100 Wh untuk level up seperti di gambar)
-                const targetKekuatan = 100; // Wh target
+                const targetKekuatan = 100; // Wh target harian
                 const progressPersen = Math.min(Math.round((totalEnergy / targetKekuatan) * 100), 100);
 
                 return {
@@ -250,6 +244,16 @@
                 });
             }, [data]);
 
+            // LDR Status Interpreter (Updated: 0 = Gelap Gulita, 4095 = Sangat Terang)
+            const getLdrStatus = (ldrVal) => {
+                const val = parseInt(ldrVal);
+                if (isNaN(val)) return 'N/A';
+                if (val < 1000) return 'Gelap Gulita';
+                if (val < 2200) return 'Redup / Mendung';
+                if (val < 3500) return 'Cerah / Terang';
+                return 'Sangat Terang';
+            };
+
             // Helper for weather icons
             const getWeatherIcon = (id) => {
                 const code = parseInt(id) || 800;
@@ -259,7 +263,6 @@
             };
 
             useEffect(() => {
-                // Initialize Lucide icons on change
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
@@ -276,14 +279,13 @@
                             </div>
                             <div>
                                 <h1 class="font-extrabold text-xl tracking-tight flex items-center gap-1.5">
-                                    SolarTrack <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.2</span>
+                                    SolarTrack <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.3</span>
                                 </h1>
-                                <p class="text-xs text-gray-400">Pemantauan Panel Cerdas</p>
+                                <p class="text-xs text-gray-400">Sistem Log & Sensor Akurat</p>
                             </div>
                         </div>
 
                         <div class="flex items-center space-x-2">
-                            {/* Source Indicator Badge */}
                             <span class={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border transition-all ${
                                 dataSource === 'live' 
                                     ? 'bg-neonGreen/10 text-neonGreen border-neonGreen/30' 
@@ -337,7 +339,7 @@
                                 <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i>
                                 <div class="space-y-1">
                                     <span class="font-semibold block">Tautan Google Sheet Privat</span>
-                                    <p class="text-gray-300">Menampilkan data simulasi presisi tinggi. Untuk menghubungkan data asli Anda, buka File -> Share -> Publish to web (Format CSV), atau ubah ID di pengaturan.</p>
+                                    <p class="text-gray-300">Menampilkan database lokal simulasi presisi tinggi. Pastikan dokumen Anda sudah dipublikasikan ke web dalam format CSV.</p>
                                 </div>
                             </div>
                         )}
@@ -425,6 +427,7 @@
                                     <div>
                                         <div class="text-[10px] text-gray-400 uppercase font-semibold leading-none">STATUS & MODE</div>
                                         <div class="text-sm font-bold text-white mt-1 flex items-center gap-1.5">
+                                            {/* Updated: Status MATI is converted to 'Standby' */}
                                             {latestLog.status === 'AKTIF' ? 'Aktif' : 'Standby'}
                                             <span class="text-xs font-medium text-gray-400">({latestLog.mode})</span>
                                         </div>
@@ -480,15 +483,15 @@
                                 <p class="text-[9px] text-gray-400 leading-tight">Laju pergerakan muatan elektron dinamis.</p>
                             </div>
 
-                            {/* LDR Value Card */}
+                            {/* LDR Value Card (UPDATED LIGHT VALUE LOGIC) */}
                             <div class="bg-darkCard p-4 rounded-[24px] border border-gray-800/80 relative overflow-hidden col-span-2">
                                 <div class="flex justify-between items-center">
                                     <div>
                                         <div class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">SENSOR INTENSITAS CAHAYA (LDR)</div>
                                         <div class="text-2xl font-black text-white mt-1">
-                                            {latestLog.ldr !== undefined ? latestLog.ldr : 4095}
+                                            {latestLog.ldr !== undefined ? latestLog.ldr : 0}
                                             <span class="text-xs font-semibold text-gray-400 ml-1.5">
-                                                ({latestLog.ldr < 1500 ? 'Sangat Terang' : latestLog.ldr < 3000 ? 'Redup' : 'Gelap gulita'})
+                                                ({getLdrStatus(latestLog.ldr)})
                                             </span>
                                         </div>
                                     </div>
@@ -496,11 +499,16 @@
                                         <i data-lucide="eye" class="w-5 h-5 text-neonGreen"></i>
                                     </div>
                                 </div>
-                                <div class="mt-3 h-1.5 w-full bg-darkBg rounded-full overflow-hidden">
+                                {/* Bar matches the logic: 4095 is 100% full (very bright), 0 is 0% (pitch black) */}
+                                <div class="mt-3 h-1.5 w-full bg-darkBg rounded-full overflow-hidden border border-gray-850">
                                     <div 
                                         class="h-full bg-neonGreen/80 transition-all duration-500"
-                                        style={{ width: `${Math.max(0, Math.min(100, 100 - (latestLog.ldr / 40.95)))}%` }}
+                                        style={{ width: `${Math.max(0, Math.min(100, (latestLog.ldr / 40.95)))}%` }}
                                     ></div>
+                                </div>
+                                <div class="flex justify-between text-[8px] text-gray-500 mt-1">
+                                    <span>0 (Gelap Gulita)</span>
+                                    <span>4095 (Cerah)</span>
                                 </div>
                             </div>
                         </div>
@@ -553,7 +561,6 @@
                                                     stroke="#C1FD11"
                                                     stroke-width="1.5"
                                                 />
-                                                {/* Popover on hover / simple indicators */}
                                                 <text 
                                                     x={p.x} 
                                                     y={p.y - 8} 
@@ -605,7 +612,7 @@
                                 <div class="space-y-0.5">
                                     <div class="text-[9px] text-gray-500 font-bold uppercase">Status Cuaca Terbaca</div>
                                     <p class="text-xs text-gray-200">
-                                        ID Cuaca: <span class="font-bold text-neonGreen">{latestLog.cuaca || 'N/A'}</span> - Jarak Pandang {latestLog.jarakPandang || '10k'}m
+                                        ID Cuaca: <span class="font-bold text-neonGreen">{latestLog.cuaca || '800'}</span> - Jarak Pandang {latestLog.jarakPandang || '10.000'}m
                                     </p>
                                 </div>
                             </div>
@@ -647,7 +654,7 @@
                                                 <span class={`text-[8px] font-bold px-1.5 py-0.2 rounded-full ${
                                                     item.status === 'AKTIF' ? 'bg-neonGreen/10 text-neonGreen' : 'bg-gray-800 text-gray-400'
                                                 }`}>
-                                                    {item.status}
+                                                    {item.status === 'AKTIF' ? 'Aktif' : 'Standby'}
                                                 </span>
                                             </div>
                                             <div class="text-[9px] text-gray-500 font-mono">{item.waktu}</div>
@@ -669,10 +676,10 @@
 
                     </main>
 
-                    {/* FOOTER BAR (Aesthetics mimic from bottom action menu) */}
+                    {/* FOOTER BAR */}
                     <footer class="mt-8 border-t border-gray-900 bg-darkBg/95 py-6 text-center text-xs text-gray-500">
                         <p>© 2026 SolarTrack Dashboard • Terkoneksi ke Google Sheets</p>
-                        <p class="text-[10px] text-gray-600 mt-1">Dibuat khusus mengikuti konsep visual eksklusif Anda</p>
+                        <p class="text-[10px] text-gray-600 mt-1">Sistem Pemantauan Panel Surya Dinamis</p>
                     </footer>
 
                 </div>
