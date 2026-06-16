@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PJU Track - Dashboard Pemantauan Panel Surya PJU</title>
+    <title>PJU Track - Ultimate Solar Dashboard</title>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,51 +12,57 @@
             theme: {
                 extend: {
                     colors: {
-                        darkBg: '#090A0F',
-                        darkCard: '#16181F',
-                        darkCardSecondary: '#21242E',
+                        darkBg: '#050505',
+                        darkCard: '#111216',
+                        darkCardSecondary: '#1A1C23',
                         neonGreen: '#C1FD11',
                         neonGreenDark: '#9BCB0D',
+                        dangerRed: '#EF4444',
+                        dangerRedDark: '#B91C1C',
                         accentBlue: '#3B82F6',
                         accentPurple: '#A855F7',
+                        accentOrange: '#F59E0B'
                     },
                     boxShadow: {
-                        'neon': '0 0 15px rgba(193, 253, 17, 0.45)',
-                        'neon-sm': '0 0 8px rgba(193, 253, 17, 0.3)',
+                        'neon-g': '0 0 15px rgba(193, 253, 17, 0.3)',
+                        'neon-r': '0 0 15px rgba(239, 68, 68, 0.3)',
                     }
                 }
             }
         }
     </script>
+    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- React & Babel for Single File App -->
+    
+    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- PropTypes & Recharts (For Interactive Charts) -->
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    
+    <!-- SheetJS (For Excel Download) -->
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Custom Style for Font & Scrollbar -->
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #090A0F;
+            background-color: #050505;
             color: #FFFFFF;
         }
-        /* Custom scrollbar for sleeker looks */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #090A0F;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #21242E;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #C1FD11;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #1A1C23; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #C1FD11; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="overflow-x-hidden antialiased">
@@ -63,632 +70,511 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
+        const { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = window.Recharts;
+        const XLSX = window.XLSX;
 
-        // Spreadsheets Details
+        // Configurations
         const SHEET_CONFIGS = {
-            project: {
-                id: '1xt-LyyuWpJd6xLaMv8BcbhpmtwhAEfhpmGCd0G3qW8Q',
-                gid: '0',
-                name: 'Panel Project',
-                badge: 'Proyek Utama'
-            },
-            conventional: {
-                id: '1KWhQ_xWwTnIofd7DL6-OtTseSvV-AdECvH2yGBZmm9Q',
-                gid: '0',
-                name: 'Panel Konvensional',
-                badge: 'Sistem Standar'
-            }
+            project: { id: '1xt-LyyuWpJd6xLaMv8BcbhpmtwhAEfhpmGCd0G3qW8Q', gid: '0', name: 'Panel Project' },
+            conventional: { id: '1KWhQ_xWwTnIofd7DL6-OtTseSvV-AdECvH2yGBZmm9Q', gid: '0', name: 'Panel Konvensional' }
         };
 
-        // Real-world representation based on fetched structure
+        // Fallback Mock Data
         const MOCK_PROJECT_DATA = [
-            { waktu: "16/06/2026 10:16:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 0, daya: 0, energi: 0, cuaca: "803", jarakPandang: 10000, ldr: 4095, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", firebaseTime: "10:15" },
-            { waktu: "16/06/2026 10:22:58", status: "MATI", mode: "OTOMATIS", arus: 0.12, tegangan: 11.8, daya: 1.41, energi: 0.2, cuaca: "803", ldr: 3950, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "10:22" },
-            { waktu: "16/06/2026 11:30:15", status: "AKTIF", mode: "OTOMATIS", arus: 1.85, tegangan: 13.6, daya: 25.16, energi: 8.5, cuaca: "801", ldr: 1200, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "11:30" },
-            { waktu: "16/06/2026 11:45:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.10, tegangan: 14.1, daya: 29.61, energi: 15.2, cuaca: "800", ldr: 3500, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "11:45" },
-            { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.45, tegangan: 14.4, daya: 35.28, energi: 22.4, cuaca: "800", ldr: 4095, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "12:00" },
-            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "OTOMATIS", arus: 2.30, tegangan: 14.2, daya: 32.66, energi: 45.1, cuaca: "801", ldr: 3800, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "13:15" },
-            { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "OTOMATIS", arus: 1.65, tegangan: 13.2, daya: 21.78, energi: 58.3, cuaca: "802", ldr: 2600, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "14:30" },
-            { waktu: "16/06/2026 15:45:10", status: "AKTIF", mode: "OTOMATIS", arus: 0.95, tegangan: 12.4, daya: 11.78, energi: 65.4, cuaca: "803", ldr: 1500, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "15:45" },
-            { waktu: "16/06/2026 16:50:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 10.5, daya: 0, energi: 68.2, cuaca: "804", ldr: 150, alamat: "Jalan Merapi, Sukorejo", firebaseTime: "16:50" }
+            { waktu: "16/06/2026 10:15:00", status: "MATI", mode: "MANUAL", arus: 0.1, tegangan: 12.1, daya: 1.2, energi: 15.2, cuaca: "803", jarakPandang: 10000, ldr: 4095, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", resultLink: "", firebaseTime: "10:15" },
+            { waktu: "16/06/2026 17:30:15", status: "AKTIF", mode: "OTOMATIS", arus: 1.85, tegangan: 11.6, daya: 21.46, energi: 18.5, cuaca: "801", jarakPandang: 10000, ldr: 800, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", resultLink: "", firebaseTime: "17:30" },
+            { waktu: "16/06/2026 20:00:00", status: "AKTIF", mode: "OTOMATIS", arus: 2.45, tegangan: 11.4, daya: 27.93, energi: 45.4, cuaca: "800", jarakPandang: 10000, ldr: 150, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", resultLink: "", firebaseTime: "20:00" },
+            { waktu: "16/06/2026 23:15:30", status: "AKTIF", mode: "OTOMATIS", arus: 2.30, tegangan: 11.2, daya: 25.76, energi: 85.1, cuaca: "801", jarakPandang: 10000, ldr: 0, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", resultLink: "", firebaseTime: "23:15" },
+            { waktu: "17/06/2026 05:45:10", status: "MATI", mode: "OTOMATIS", arus: 0, tegangan: 12.4, daya: 0, energi: 150.4, cuaca: "803", jarakPandang: 10000, ldr: 2500, sunrise: "05:42", sunset: "17:23", alamat: "Jalan Merapi, Sukorejo", lat: "-7.629741", lon: "111.900292", resultLink: "", firebaseTime: "05:45" }
         ];
 
-        const MOCK_CONVENTIONAL_DATA = [
-            { waktu: "16/06/2026 10:16:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 0, daya: 0, energi: 0, cuaca: "803", ldr: 4095, alamat: "Situs Uji B, Sukorejo", firebaseTime: "10:15" },
-            { waktu: "16/06/2026 11:30:15", status: "AKTIF", mode: "MANUAL", arus: 1.10, tegangan: 11.5, daya: 12.65, energi: 4.2, cuaca: "801", ldr: 3200, alamat: "Situs Uji B, Sukorejo", firebaseTime: "11:30" },
-            { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "MANUAL", arus: 1.45, tegangan: 12.0, daya: 17.40, energi: 10.8, cuaca: "800", ldr: 4000, alamat: "Situs Uji B, Sukorejo", firebaseTime: "12:00" },
-            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "MANUAL", arus: 1.35, stroke: 11.8, daya: 15.93, energi: 21.3, cuaca: "801", ldr: 3100, alamat: "Situs Uji B, Sukorejo", firebaseTime: "13:15" },
-            { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "MANUAL", arus: 0.95, tegangan: 11.2, daya: 10.64, energi: 28.5, cuaca: "802", ldr: 1800, alamat: "Situs Uji B, Sukorejo", firebaseTime: "14:30" }
-        ];
+        // Helpers
+        const parseDateToObj = (str) => {
+            if(!str || str==='N/A') return null;
+            const parts = str.split(' ');
+            if(parts.length < 2) return null;
+            const dateParts = parts[0].split('/');
+            const timeParts = parts[1].split(':');
+            return new Date(dateParts[2], dateParts[1]-1, dateParts[0], timeParts[0]||0, timeParts[1]||0, timeParts[2]||0);
+        };
+
+        const formatDuration = (ms) => {
+            if(ms < 0) return "0j 0m";
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            return `${hours}j ${minutes}m`;
+        };
 
         function App() {
-            const [selectedSheet, setSelectedSheet] = useState('project'); // 'project' or 'conventional'
-            const [data, setData] = useState(MOCK_PROJECT_DATA);
-            const [loading, setLoading] = useState(false);
+            const [selectedSheet, setSelectedSheet] = useState('project');
+            const [data, setData] = useState([]);
+            const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
-            const [dataSource, setDataSource] = useState('fallback'); // 'live' or 'fallback'
-            const [customSheetId, setCustomSheetId] = useState('');
-            const [showSettings, setShowSettings] = useState(false);
-            const [searchTerm, setSearchTerm] = useState('');
+            const [autoRefresh, setAutoRefresh] = useState(true);
+            
+            // Filter States
+            const [selectedDate, setSelectedDate] = useState('Semua');
 
-            // CSV Parser Helper
+            // Parse CSV dynamically
             const parseCSV = (text) => {
                 const lines = text.split('\n');
                 if (lines.length < 2) return [];
-                
-                // Try to detect headers
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                
-                return lines.slice(1).filter(line => line.trim() !== '').map(line => {
-                    const values = [];
-                    let current = '';
-                    let inQuotes = false;
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if (char === ',' && !inQuotes) {
-                            values.push(current.trim());
-                            current = '';
-                        } else {
-                            current += char;
-                        }
+                const parsedRows = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
+                    if (values.length >= 10) {
+                        const wkt = values[0] || 'N/A';
+                        const tsObj = parseDateToObj(wkt);
+                        parsedRows.push({
+                            waktu: wkt,
+                            tanggal: wkt.split(' ')[0] || 'N/A',
+                            timestamp: tsObj ? tsObj.getTime() : 0,
+                            status: (values[1] || 'MATI').toUpperCase(),
+                            modeSheet: values[2] || 'MANUAL',
+                            arus: parseFloat(values[3]) || 0,
+                            tegangan: parseFloat(values[4]) || 0,
+                            daya: parseFloat(values[5]) || 0,
+                            energi: parseFloat(values[6]) || 0,
+                            cuaca: values[7] || '800',
+                            jarakPandang: parseInt(values[8]) || 10000,
+                            ldr: parseInt(values[9]) || 0,
+                            sunrise: values[10] || '05:42',
+                            sunset: values[11] || '17:23',
+                            alamat: values[12] || 'Situs PJU',
+                            lat: values[13] || '-7.629',
+                            lon: values[14] || '111.900',
+                            firebaseTime: values[16] || wkt.split(' ')[1] || '--:--'
+                        });
                     }
-                    values.push(current.trim());
-
-                    return {
-                        waktu: values[0] || 'N/A',
-                        status: values[1] || 'MATI',
-                        mode: values[2] || 'MANUAL',
-                        arus: parseFloat(values[3]) || 0,
-                        tegangan: parseFloat(values[4]) || 0,
-                        daya: parseFloat(values[5]) || 0,
-                        energi: parseFloat(values[6]) || 0,
-                        cuaca: values[7] || '800',
-                        jarakPandang: parseInt(values[8]) || 10000,
-                        ldr: parseInt(values[9]) || 0, // Default 0
-                        sunrise: values[10] || '05:42',
-                        sunset: values[11] || '17:23',
-                        alamat: values[12] || 'Situs Lapangan',
-                        lat: values[13] || '-7.629',
-                        lon: values[14] || '111.900',
-                        firebaseTime: values[16] || values[0]?.split(' ')?.[1] || '--:--'
-                    };
-                });
+                }
+                return parsedRows.sort((a,b) => a.timestamp - b.timestamp); // Chronological
             };
 
-            // Fetch live data from Google Sheets
-            const fetchLiveData = async (sheetType) => {
+            const fetchLiveData = async () => {
                 setLoading(true);
-                setError(null);
-                const config = SHEET_CONFIGS[sheetType];
-                const sheetId = customSheetId || config.id;
-                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${config.gid}`;
-
+                const config = SHEET_CONFIGS[selectedSheet];
+                const url = `https://docs.google.com/spreadsheets/d/${config.id}/export?format=csv&gid=${config.gid}&t=${new Date().getTime()}`;
                 try {
                     const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error("Gagal mengambil data dari Google Sheets.");
-                    }
+                    if (!response.ok) throw new Error("Gagal mengunduh sheet.");
                     const text = await response.text();
                     const parsed = parseCSV(text);
-                    if (parsed.length === 0) {
-                        throw new Error("Format data di dalam Sheet tidak cocok.");
-                    }
-                    setData(parsed);
-                    setDataSource('live');
+                    setData(parsed.length ? parsed : parseCSV(MOCK_PROJECT_DATA.map(d=>Object.values(d).join(',')).join('\n')));
                 } catch (err) {
-                    console.warn("Koneksi gagal, menggunakan database lokal fallback:", err.message);
-                    setError(err.message);
-                    setData(sheetType === 'project' ? MOCK_PROJECT_DATA : MOCK_CONVENTIONAL_DATA);
-                    setDataSource('fallback');
+                    console.warn("Fallback to Mock", err);
+                    setData(MOCK_PROJECT_DATA.map(d => ({...d, tanggal: d.waktu.split(' ')[0], timestamp: parseDateToObj(d.waktu)?.getTime()||0})));
                 } finally {
                     setLoading(false);
                 }
             };
 
-            useEffect(() => {
-                fetchLiveData(selectedSheet);
-            }, [selectedSheet]);
+            useEffect(() => { fetchLiveData(); }, [selectedSheet]);
 
-            // Latest logged row
-            const latestLog = useMemo(() => {
-                if (!data || data.length === 0) return {};
-                return data[data.length - 1];
+            useEffect(() => {
+                if (!autoRefresh) return;
+                const interval = setInterval(fetchLiveData, 60000); // Auto refresh 1 menit
+                return () => clearInterval(interval);
+            }, [autoRefresh, selectedSheet]);
+
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+
+            // ----- DATA PROCESSING & FILTERING -----
+            const availableDates = useMemo(() => {
+                const dates = new Set(data.map(d => d.tanggal).filter(d => d !== 'N/A'));
+                return ['Semua', ...Array.from(dates).sort().reverse()];
             }, [data]);
 
-            // Calculate overall analytics
-            const summaryStats = useMemo(() => {
-                if (!data || data.length === 0) return { avgDaya: 0, peakDaya: 0, totalEnergy: 0, progressPersen: 0 };
+            // Set filter otomatis ke hari terbaru jika baru diload
+            useEffect(() => {
+                if(availableDates.length > 1 && selectedDate === 'Semua') {
+                    setSelectedDate(availableDates[1]);
+                }
+            }, [availableDates]);
+
+            const filteredData = useMemo(() => {
+                if (selectedDate === 'Semua') return data;
+                return data.filter(d => d.tanggal === selectedDate);
+            }, [data, selectedDate]);
+
+            const latestLog = useMemo(() => {
+                return filteredData.length > 0 ? filteredData[filteredData.length - 1] : {};
+            }, [filteredData]);
+
+            // Real-Time Derived Statuses
+            const isLampuOn = latestLog.status === 'AKTIF' || latestLog.status === 'NYALA' || latestLog.status === 'A';
+            const statusLampuText = isLampuOn ? 'ON' : 'OFF';
+            
+            // Mode Sistem: Charging (Mati & LDR Terang), Discharging (Lampu ON), Idle (Mati & LDR Gelap)
+            const getSystemMode = (log) => {
+                const isOn = log.status === 'AKTIF' || log.status === 'A';
+                if (isOn) return { text: 'Discharging (Beban Aktif)', color: 'text-accentOrange' };
+                if (log.ldr > 1000) return { text: 'Charging (Isi Baterai)', color: 'text-accentBlue' };
+                return { text: 'Idle (Standby)', color: 'text-gray-400' };
+            };
+            const currentMode = latestLog.waktu ? getSystemMode(latestLog) : { text: 'Unknown', color: 'text-gray-500' };
+
+            // ----- ANALYTICS: RIWAYAT & REKAP HARIAN -----
+            const analytics = useMemo(() => {
+                if(!filteredData.length) return null;
                 
-                const dayas = data.map(d => d.daya).filter(val => !isNaN(val));
-                const totalEnergy = data[data.length - 1]?.energi || dayas.reduce((acc, curr) => acc + curr, 0) * 0.016;
-                const peakDaya = Math.max(...dayas, 0);
-                const avgDaya = dayas.reduce((acc, c) => acc + c, 0) / (dayas.length || 1);
-                
-                const targetKekuatan = 100; // Wh target harian
-                const progressPersen = Math.min(Math.round((totalEnergy / targetKekuatan) * 100), 100);
+                let totalVolt = 0, totalAmp = 0;
+                let nyalaStart = null;
+                let totalDurasiMs = 0;
+                let cycles = 0;
+                let jamMenyalaStr = "-";
+                let jamMatiStr = "-";
+                let prevStatus = false;
+
+                filteredData.forEach(log => {
+                    totalVolt += log.tegangan;
+                    totalAmp += log.arus;
+                    
+                    const isOn = log.status === 'AKTIF' || log.status === 'A';
+                    if(isOn && !prevStatus) {
+                        // Transisi Mati -> Nyala
+                        nyalaStart = log.timestamp;
+                        cycles++;
+                        jamMenyalaStr = log.firebaseTime; // Rekam nyala terakhir/pertama hari itu
+                    } else if (!isOn && prevStatus) {
+                        // Transisi Nyala -> Mati
+                        if(nyalaStart && log.timestamp > nyalaStart) {
+                            totalDurasiMs += (log.timestamp - nyalaStart);
+                        }
+                        nyalaStart = null;
+                        jamMatiStr = log.firebaseTime;
+                    }
+                    prevStatus = isOn;
+                });
+
+                // Jika masih nyala sampai data terakhir
+                if(nyalaStart && prevStatus && filteredData.length > 0) {
+                    const lastTs = filteredData[filteredData.length-1].timestamp;
+                    if(lastTs > nyalaStart) totalDurasiMs += (lastTs - nyalaStart);
+                }
+
+                const count = filteredData.length || 1;
+                const dailyEnergy = latestLog.energi - (filteredData[0]?.energi || 0);
 
                 return {
-                    avgDaya: avgDaya.toFixed(2),
-                    peakDaya: peakDaya.toFixed(2),
-                    totalEnergy: totalEnergy.toFixed(3),
-                    progressPersen
+                    avgVolt: (totalVolt / count).toFixed(2),
+                    avgAmp: (totalAmp / count).toFixed(2),
+                    dailyEnergy: Math.max(0, dailyEnergy).toFixed(2),
+                    jamMenyala: jamMenyalaStr,
+                    jamMati: jamMatiStr,
+                    durasiMenyalaMs: totalDurasiMs,
+                    durasiFormatted: formatDuration(totalDurasiMs),
+                    siklus: cycles
                 };
-            }, [data]);
+            }, [filteredData, latestLog]);
 
-            // Filtered history log
-            const filteredData = useMemo(() => {
-                if (!searchTerm) return [...data].reverse();
-                return [...data].filter(item => 
-                    item.waktu.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.mode.toLowerCase().includes(searchTerm.toLowerCase())
-                ).reverse();
-            }, [data, searchTerm]);
-
-            // Simple SVG Chart data generation
-            const svgChartPoints = useMemo(() => {
-                if (!data || data.length < 2) return '';
-                const width = 500;
-                const height = 120;
-                const padding = 15;
-                
-                const maxDaya = Math.max(...data.map(d => d.daya), 5);
-                const stepX = (width - padding * 2) / (data.length - 1);
-                
-                return data.map((d, index) => {
-                    const x = padding + index * stepX;
-                    const y = height - padding - ((d.daya / maxDaya) * (height - padding * 2));
-                    return { x, y, val: d.daya, time: d.firebaseTime };
-                });
-            }, [data]);
-
-            // LDR Status Interpreter (Updated: 0 = Gelap Gulita, 4095 = Sangat Terang)
-            const getLdrStatus = (ldrVal) => {
-                const val = parseInt(ldrVal);
-                if (isNaN(val)) return 'N/A';
-                if (val < 1000) return 'Gelap Gulita';
-                if (val < 2200) return 'Redup / Mendung';
-                if (val < 3500) return 'Cerah / Terang';
-                return 'Sangat Terang';
+            // ----- EXPORT FUNCTIONS -----
+            const handleExportCSV = () => {
+                if(!filteredData.length) return alert("Tidak ada data untuk diekspor");
+                const headers = Object.keys(filteredData[0]).join(',');
+                const rows = filteredData.map(obj => Object.values(obj).join(',')).join('\n');
+                const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + rows;
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `PJU_Log_${selectedDate.replace(/\//g,'-')}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
             };
 
-            // Helper for weather icons
-            const getWeatherIcon = (id) => {
-                const code = parseInt(id) || 800;
-                if (code === 800) return <i data-lucide="sun" class="w-6 h-6 text-yellow-400"></i>;
-                if (code > 800 && code < 805) return <i data-lucide="cloud-sun" class="w-6 h-6 text-gray-300"></i>;
-                return <i data-lucide="cloud-rain" class="w-6 h-6 text-blue-400"></i>;
+            const handleExportExcel = () => {
+                if(!filteredData.length) return alert("Tidak ada data untuk diekspor");
+                const worksheet = XLSX.utils.json_to_sheet(filteredData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "PJU Data");
+                XLSX.writeFile(workbook, `PJU_Report_${selectedDate.replace(/\//g,'-')}.xlsx`);
             };
 
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [data, selectedSheet, dataSource, loading, showSettings]);
-
+            // Main Render
             return (
-                <div class="min-h-screen pb-16 bg-darkBg text-gray-100 flex flex-col justify-between">
+                <div class="min-h-screen bg-darkBg text-gray-100 flex flex-col font-sans selection:bg-neonGreen selection:text-darkBg">
                     
-                    {/* Header Panel */}
-                    <header class="px-6 py-5 flex items-center justify-between border-b border-gray-800 bg-darkBg/90 backdrop-blur sticky top-0 z-40">
+                    {/* TOP NAVBAR */}
+                    <header class="px-4 py-4 md:px-8 md:py-5 border-b border-gray-800/60 bg-darkCard/80 backdrop-blur-md sticky top-0 z-50 flex flex-wrap gap-4 items-center justify-between">
                         <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-xl bg-neonGreen flex items-center justify-center shadow-neon">
-                                <i data-lucide="zap" class="w-5 h-5 text-darkBg stroke-[2.5]"></i>
+                            <div class={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 ${isLampuOn ? 'bg-neonGreen shadow-neon-g' : 'bg-dangerRed shadow-neon-r'}`}>
+                                <i data-lucide={isLampuOn ? "lightbulb" : "lightbulb-off"} class="w-5 h-5 text-darkBg stroke-[2.5]"></i>
                             </div>
                             <div>
-                                <h1 class="font-extrabold text-xl tracking-tight flex items-center gap-1.5">
-                                    PJU Track <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.5</span>
-                                </h1>
-                                <p class="text-xs text-gray-400">Sistem Tracker Penerangan Jalan Umum</p>
+                                <h1 class="font-extrabold text-lg md:text-xl tracking-tight">PJU Track Enterprise</h1>
+                                <p class="text-xs text-gray-400">Monitoring System Real-Time</p>
                             </div>
                         </div>
 
-                        <div class="flex items-center space-x-2">
-                            <span class={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border transition-all ${
-                                dataSource === 'live' 
-                                    ? 'bg-neonGreen/10 text-neonGreen border-neonGreen/30' 
-                                    : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            }`}>
-                                {dataSource === 'live' ? '● Real-time Sheet' : '● Demo Offline'}
-                            </span>
+                        <div class="flex items-center flex-wrap gap-3">
+                            {/* Auto Refresh Toggle */}
+                            <div class="flex items-center gap-2 bg-darkCardSecondary px-3 py-1.5 rounded-lg border border-gray-800">
+                                <span class="text-[10px] uppercase font-bold text-gray-400">Auto Update</span>
+                                <button onClick={() => setAutoRefresh(!autoRefresh)} class={`w-8 h-4 rounded-full p-0.5 transition-colors ${autoRefresh ? 'bg-neonGreen' : 'bg-gray-600'}`}>
+                                    <div class={`bg-darkBg w-3 h-3 rounded-full transform transition-transform ${autoRefresh ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                </button>
+                            </div>
 
-                            <button 
-                                onClick={() => setShowSettings(!showSettings)}
-                                class="p-2 rounded-lg bg-darkCard hover:bg-darkCardSecondary transition border border-gray-800 text-gray-300"
-                                title="Pengaturan Spreadsheet"
-                            >
-                                <i data-lucide="settings" class="w-5 h-5"></i>
+                            {/* Export Buttons */}
+                            <button onClick={handleExportCSV} class="p-2 bg-darkCardSecondary hover:bg-gray-800 rounded-lg text-gray-300 transition" title="Export CSV">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                            </button>
+                            <button onClick={handleExportExcel} class="p-2 bg-[#1D6F42]/20 hover:bg-[#1D6F42]/40 text-[#2ecc71] border border-[#1D6F42]/50 rounded-lg transition" title="Download Excel">
+                                <i data-lucide="sheet" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </header>
 
-                    {/* Main Container */}
-                    <main class="max-w-md mx-auto w-full px-4 pt-6 space-y-6">
+                    <main class="flex-1 w-full max-w-[1400px] mx-auto px-4 py-6 space-y-6">
                         
-                        {/* Selector Tabs (Gaya Budggt. tab modern) */}
-                        <div class="bg-darkCard p-1 rounded-2xl border border-gray-800/80 flex">
-                            <button
-                                onClick={() => setSelectedSheet('project')}
-                                class={`flex-1 py-3 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                                    selectedSheet === 'project' 
-                                        ? 'bg-darkCardSecondary text-neonGreen border border-gray-700/50 shadow-sm' 
-                                        : 'text-gray-400 hover:text-white'
-                                }`}
-                            >
-                                <i data-lucide="layers" class="w-4 h-4"></i>
-                                {SHEET_CONFIGS.project.name}
-                            </button>
-                            <button
-                                onClick={() => setSelectedSheet('conventional')}
-                                class={`flex-1 py-3 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                                    selectedSheet === 'conventional' 
-                                        ? 'bg-darkCardSecondary text-neonGreen border border-gray-700/50 shadow-sm' 
-                                        : 'text-gray-400 hover:text-white'
-                                }`}
-                            >
-                                <i data-lucide="compass" class="w-4 h-4"></i>
-                                {SHEET_CONFIGS.conventional.name}
-                            </button>
-                        </div>
-
-                        {/* Error Warning */}
-                        {error && (
-                            <div class="bg-amber-950/20 border border-amber-500/30 rounded-xl p-3.5 text-xs text-amber-200 flex items-start space-x-2.5">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i>
-                                <div class="space-y-1">
-                                    <span class="font-semibold block">Tautan Google Sheet Privat</span>
-                                    <p class="text-gray-300">Menampilkan database lokal simulasi presisi tinggi. Pastikan dokumen Anda sudah dipublikasikan ke web dalam format CSV.</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Settings Modal/Box */}
-                        {showSettings && (
-                            <div class="bg-darkCard rounded-2xl border border-gray-700/50 p-5 space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-sm font-bold text-neonGreen flex items-center gap-2">
-                                        <i data-lucide="database" class="w-4 h-4"></i> Integrasi Google Spreadsheet
-                                    </h3>
-                                    <button onClick={() => setShowSettings(false)} class="text-gray-400 hover:text-white text-xs">Tutup</button>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="text-xs text-gray-400 block">ID Dokumen Kustom ({selectedSheet === 'project' ? 'Project' : 'Konvensional'})</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Masukkan Spreadsheet ID anda..." 
-                                        value={customSheetId}
-                                        onChange={(e) => setCustomSheetId(e.target.value)}
-                                        class="w-full bg-darkBg border border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-neonGreen"
-                                    />
-                                </div>
-                                <div class="flex space-x-2">
+                        {/* CONTROL BAR (Source & Date Filter) */}
+                        <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-darkCard p-3 rounded-2xl border border-gray-800/50">
+                            <div class="flex gap-2 w-full md:w-auto bg-darkBg p-1 rounded-xl">
+                                {Object.keys(SHEET_CONFIGS).map(key => (
                                     <button 
-                                        onClick={() => fetchLiveData(selectedSheet)}
-                                        class="flex-1 bg-neonGreen text-darkBg text-xs font-bold py-2.5 rounded-xl transition hover:bg-neonGreenDark flex items-center justify-center gap-1.5 shadow-neon-sm"
+                                        key={key} 
+                                        onClick={() => setSelectedSheet(key)}
+                                        class={`flex-1 md:flex-none px-4 py-2 text-xs font-bold rounded-lg transition ${selectedSheet === key ? 'bg-darkCardSecondary text-neonGreen shadow-sm' : 'text-gray-500 hover:text-white'}`}
                                     >
-                                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Hubungkan Baru
+                                        {SHEET_CONFIGS[key].name}
                                     </button>
-                                    <button 
-                                        onClick={() => {
-                                            setCustomSheetId('');
-                                            setDataSource('fallback');
-                                            setData(selectedSheet === 'project' ? MOCK_PROJECT_DATA : MOCK_CONVENTIONAL_DATA);
-                                            setError(null);
-                                        }}
-                                        class="px-3 bg-darkCardSecondary text-gray-300 text-xs py-2.5 rounded-xl hover:text-white"
-                                    >
-                                        Reset Default
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* MAIN ESTIMASI CARD */}
-                        <div class="bg-darkCard rounded-[32px] p-7 border border-gray-800/80 shadow-2xl relative overflow-hidden">
-                            {/* Abstract glowing backgrounds */}
-                            <div class="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-neonGreen/10 blur-[50px] pointer-events-none"></div>
-                            
-                            <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
-                                <span class="flex items-center tracking-wider font-semibold uppercase gap-1.5">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-neonGreen animate-pulse"></span>
-                                    Daya Keluaran Saat Ini
-                                </span>
-                                <span class="text-[11px] font-mono bg-darkCardSecondary px-2.5 py-1 rounded-full text-gray-300">
-                                    Log: {latestLog.firebaseTime || '--:--'}
-                                </span>
-                            </div>
-
-                            {/* Main Giant Metric */}
-                            <div class="text-[42px] font-extrabold tracking-tight text-white leading-none my-3 select-none flex items-baseline gap-1">
-                                {latestLog.daya !== undefined ? latestLog.daya : 0} <span class="text-2xl font-semibold text-neonGreen">W</span>
-                            </div>
-
-                            {/* Mini runway indicator */}
-                            <div class="mt-4 inline-flex items-center bg-darkCardSecondary/80 border border-gray-800 rounded-2xl px-3.5 py-2 gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-neonGreen flex items-center justify-center">
-                                    <i data-lucide="battery-charging" class="w-4 h-4 text-darkBg stroke-[2.5]"></i>
-                                </div>
-                                <div>
-                                    <div class="text-[10px] text-gray-400 uppercase tracking-widest font-bold leading-none mb-0.5">Total Energi</div>
-                                    <div class="text-sm font-extrabold text-white">
-                                        {summaryStats.totalEnergy} <span class="text-[10px] font-bold text-neonGreen">Wh</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Current Level section (Target Berikutnya) */}
-                            <div class="border-t border-gray-800/80 mt-6 pt-5 flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-9 h-9 rounded-full bg-[#21242E] flex items-center justify-center text-neonGreen border border-gray-700/60">
-                                        <i data-lucide="shield" class="w-4 h-4"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] text-gray-400 uppercase font-semibold leading-none">STATUS & MODE</div>
-                                        <div class="text-sm font-bold mt-1 flex items-center gap-1.5">
-                                            {/* Updated: Status MATI is converted directly to 'Mati' & AKTIF is 'Nyala' */}
-                                            <span class={latestLog.status === 'AKTIF' ? 'text-neonGreen' : 'text-red-500'}>
-                                                {latestLog.status === 'AKTIF' ? 'Nyala' : 'Mati'}
-                                            </span>
-                                            <span class="text-xs font-medium text-gray-400">({latestLog.mode})</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-[10px] text-gray-400 uppercase font-semibold">TARGET HARIAN</div>
-                                    <div class="text-sm font-extrabold text-neonGreen mt-1">100.000 Wh</div>
-                                </div>
-                            </div>
-
-                            {/* Progress bar level berikutnya */}
-                            <div class="mt-5 space-y-1.5">
-                                <div class="flex justify-between text-[10px] text-gray-400 font-bold tracking-wider uppercase">
-                                    <span>Efisiensi Pengisian</span>
-                                    <span class="text-neonGreen">{summaryStats.progressPersen}%</span>
-                                </div>
-                                <div class="h-2 w-full bg-darkBg rounded-full overflow-hidden border border-gray-800">
-                                    <div 
-                                        class="h-full bg-neonGreen rounded-full transition-all duration-700 relative"
-                                        style={{ width: `${summaryStats.progressPersen}%` }}
-                                    >
-                                        <div class="absolute inset-0 bg-white/30 animate-pulse"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* THREE DYNAMIC ASSET CARDS */}
-                        <div class="grid grid-cols-2 gap-4">
-                            
-                            {/* Tegangan Card */}
-                            <div class="bg-darkCard p-4 rounded-[24px] border border-gray-800/80 relative overflow-hidden">
-                                <div class="absolute top-3 right-3">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-accentPurple inline-block shadow-[0_0_8px_rgba(168,85,247,0.5)]"></span>
-                                </div>
-                                <div class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">TEGANGAN</div>
-                                <div class="text-xl font-extrabold text-white mt-2 mb-1">
-                                    {latestLog.tegangan !== undefined ? latestLog.tegangan : 0} <span class="text-xs text-accentPurple font-semibold">V</span>
-                                </div>
-                                <p class="text-[9px] text-gray-400 leading-tight">Potensi beda gerak arus listrik masuk baterai.</p>
-                            </div>
-
-                            {/* Arus Card */}
-                            <div class="bg-darkCard p-4 rounded-[24px] border border-gray-800/80 relative overflow-hidden">
-                                <div class="absolute top-3 right-3">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-accentBlue inline-block shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
-                                </div>
-                                <div class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">ARUS LISTRIK</div>
-                                <div class="text-xl font-extrabold text-white mt-2 mb-1">
-                                    {latestLog.arus !== undefined ? latestLog.arus : 0} <span class="text-xs text-accentBlue font-semibold">A</span>
-                                </div>
-                                <p class="text-[9px] text-gray-400 leading-tight">Laju pergerakan muatan elektron dinamis.</p>
-                            </div>
-
-                            {/* LDR Value Card (UPDATED LIGHT VALUE LOGIC) */}
-                            <div class="bg-darkCard p-4 rounded-[24px] border border-gray-800/80 relative overflow-hidden col-span-2">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <div class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">SENSOR INTENSITAS CAHAYA (LDR)</div>
-                                        <div class="text-2xl font-black text-white mt-1">
-                                            {latestLog.ldr !== undefined ? latestLog.ldr : 0}
-                                            <span class="text-xs font-semibold text-gray-400 ml-1.5">
-                                                ({getLdrStatus(latestLog.ldr)})
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-xl bg-darkCardSecondary flex items-center justify-center">
-                                        <i data-lucide="eye" class="w-5 h-5 text-neonGreen"></i>
-                                    </div>
-                                </div>
-                                {/* Bar matches the logic: 4095 is 100% full (very bright), 0 is 0% (pitch black) */}
-                                <div class="mt-3 h-1.5 w-full bg-darkBg rounded-full overflow-hidden border border-gray-850">
-                                    <div 
-                                        class="h-full bg-neonGreen/80 transition-all duration-500"
-                                        style={{ width: `${Math.max(0, Math.min(100, (latestLog.ldr / 40.95)))}%` }}
-                                    ></div>
-                                </div>
-                                <div class="flex justify-between text-[8px] text-gray-500 mt-1">
-                                    <span>0 (Gelap Gulita)</span>
-                                    <span>4095 (Cerah)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* LINE GRAPH REPRESENTATION */}
-                        <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/80">
-                            <div class="flex items-center justify-between mb-4">
-                                <div>
-                                    <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Grafik Trend Daya (W)</h4>
-                                    <p class="text-[10px] text-neonGreen">Berdasarkan waktu log sistem</p>
-                                </div>
-                                <span class="text-[10px] bg-darkCardSecondary text-gray-300 font-mono px-2 py-0.5 rounded-md border border-gray-800">
-                                    Max: {summaryStats.peakDaya} W
-                                </span>
-                            </div>
-
-                            {/* SVG Chart */}
-                            {svgChartPoints ? (
-                                <div class="relative w-full">
-                                    <svg viewBox="0 0 500 120" class="w-full overflow-visible">
-                                        <defs>
-                                            <linearGradient id="neonGlow" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stop-color="#C1FD11" stop-opacity="0.3" />
-                                                <stop offset="100%" stop-color="#C1FD11" stop-opacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                        {/* Chart Path Area */}
-                                        <path 
-                                            d={`M ${svgChartPoints[0].x} 105 L ${svgChartPoints.map(p => `${p.x} ${p.y}`).join(' L ')} L ${svgChartPoints[svgChartPoints.length-1].x} 105 Z`}
-                                            fill="url(#neonGlow)"
-                                        />
-                                        {/* Line path */}
-                                        <path 
-                                            d={svgChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} 
-                                            fill="none" 
-                                            stroke="#C1FD11" 
-                                            stroke-width="2.5" 
-                                            stroke-linecap="round"
-                                        />
-                                        {/* Reference baseline */}
-                                        <line x1="15" y1="105" x2="485" y2="105" stroke="#21242E" stroke-width="1" />
-                                        {/* Interactive Circles / Dots */}
-                                        {svgChartPoints.map((p, i) => (
-                                            <g key={i} class="group/point">
-                                                <circle 
-                                                    cx={p.x} 
-                                                    cy={p.y} 
-                                                    r={i === svgChartPoints.length - 1 ? "5" : "3.5"} 
-                                                    fill={i === svgChartPoints.length - 1 ? "#C1FD11" : "#16181F"}
-                                                    stroke="#C1FD11"
-                                                    stroke-width="1.5"
-                                                />
-                                                <text 
-                                                    x={p.x} 
-                                                    y={p.y - 8} 
-                                                    text-anchor="middle" 
-                                                    fill="#FFFFFF" 
-                                                    font-size="8" 
-                                                    class="opacity-0 group-hover/point:opacity-100 transition-opacity font-bold"
-                                                >
-                                                    {p.val}W
-                                                </text>
-                                            </g>
-                                        ))}
-                                    </svg>
-                                    <div class="flex justify-between text-[8px] text-gray-500 font-mono mt-1 px-3">
-                                        <span>{svgChartPoints[0].time}</span>
-                                        <span>{svgChartPoints[Math.floor(svgChartPoints.length / 2)]?.time}</span>
-                                        <span>{svgChartPoints[svgChartPoints.length - 1].time}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div class="h-24 flex items-center justify-center text-xs text-gray-500">
-                                    Sedang mengolah statistik data grafik...
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ENVIRONMENT DETAILS & WEATHER (ID Cuaca, Alamat, Sunrise, Sunset) */}
-                        <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/80 space-y-4">
-                            <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider flex items-center gap-1.5">
-                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-neonGreen"></i>
-                                Informasi Lingkungan & Lokasi PJU
-                            </h4>
-
-                            <div class="grid grid-cols-2 gap-3 bg-darkBg p-3 rounded-2xl border border-gray-800/50">
-                                <div>
-                                    <div class="text-[9px] text-gray-500 font-semibold uppercase">Sunrise</div>
-                                    <div class="text-xs font-bold text-gray-200 mt-0.5">{latestLog.sunrise || '--:--'} WIB</div>
-                                </div>
-                                <div>
-                                    <div class="text-[9px] text-gray-500 font-semibold uppercase">Sunset</div>
-                                    <div class="text-xs font-bold text-gray-200 mt-0.5">{latestLog.sunset || '--:--'} WIB</div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 bg-darkBg p-3 rounded-2xl border border-gray-800/50">
-                                <div class="w-9 h-9 rounded-xl bg-darkCardSecondary flex items-center justify-center flex-shrink-0">
-                                    {getWeatherIcon(latestLog.cuaca)}
-                                </div>
-                                <div class="space-y-0.5">
-                                    <div class="text-[9px] text-gray-500 font-bold uppercase">Status Cuaca Terbaca</div>
-                                    <p class="text-xs text-gray-200">
-                                        ID Cuaca: <span class="font-bold text-neonGreen">{latestLog.cuaca || '800'}</span> - Jarak Pandang {latestLog.jarakPandang || '10.000'}m
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="p-3 bg-darkBg rounded-2xl border border-gray-800/50 text-[11px] text-gray-400 space-y-1">
-                                <div class="text-[9px] text-gray-500 font-bold uppercase">ALAMAT SISTEM PJU</div>
-                                <p class="text-white font-medium">{latestLog.alamat || 'Tidak Terdeteksi'}</p>
-                                <div class="text-[9px] text-neonGreen font-mono mt-1">
-                                    Lat: {latestLog.lat || '--'} | Lon: {latestLog.lon || '--'}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* DATA HISTORY TABLE & LOGS PANEL */}
-                        <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/80 space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Log Riwayat PJU Sheet</h4>
-                                    <p class="text-[9px] text-gray-500">Tabel entri riwayat urutan terbaru</p>
-                                </div>
-                                <div class="relative w-32">
-                                    <input 
-                                        type="text" 
-                                        placeholder="Cari..." 
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        class="w-full bg-darkBg border border-gray-800 rounded-lg pl-6 pr-2 py-1 text-[10px] text-white focus:outline-none focus:border-neonGreen"
-                                    />
-                                    <i data-lucide="search" class="w-3 h-3 text-gray-500 absolute left-2 top-2"></i>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                                {filteredData.map((item, index) => (
-                                    <div key={index} class="bg-darkBg p-3 rounded-xl border border-gray-800/80 hover:border-gray-700 transition flex justify-between items-center text-xs">
-                                        <div class="space-y-1">
-                                            <div class="text-white font-semibold flex items-center gap-1.5">
-                                                <span>{item.daya} W</span>
-                                                <span class={`text-[8px] font-bold px-1.5 py-0.2 rounded-full ${
-                                                    item.status === 'AKTIF' ? 'bg-neonGreen/10 text-neonGreen' : 'bg-red-500/10 text-red-400'
-                                                }`}>
-                                                    {item.status === 'AKTIF' ? 'Nyala' : 'Mati'}
-                                                </span>
-                                            </div>
-                                            <div class="text-[9px] text-gray-500 font-mono">{item.waktu}</div>
-                                        </div>
-                                        <div class="text-right space-y-1">
-                                            <div class="text-gray-300 font-mono font-bold">{item.tegangan}V / {item.arus}A</div>
-                                            <div class="text-[9px] text-neonGreen">{item.mode}</div>
-                                        </div>
-                                    </div>
                                 ))}
-
-                                {filteredData.length === 0 && (
-                                    <div class="text-center py-6 text-xs text-gray-500">
-                                        Data tidak ditemukan...
-                                    </div>
-                                )}
                             </div>
+
+                            <div class="flex items-center gap-2 w-full md:w-auto">
+                                <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i>
+                                <select 
+                                    value={selectedDate} 
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    class="bg-darkBg border border-gray-700 text-sm rounded-lg px-3 py-2 text-white outline-none focus:border-neonGreen w-full md:w-48 cursor-pointer"
+                                >
+                                    {availableDates.map(d => <option key={d} value={d}>{d === 'Semua' ? 'Keseluruhan Data' : d}</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        {loading && <div class="h-1 bg-darkCardSecondary overflow-hidden rounded-full"><div class="h-full bg-neonGreen animate-pulse w-1/3"></div></div>}
+
+                        {/* =========================================
+                            SECTION 1: REALTIME MONITORING CARDS 
+                        ========================================== */}
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+                            
+                            {/* Card 1: Status Utama */}
+                            <div class={`col-span-2 md:col-span-2 lg:col-span-2 p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between ${isLampuOn ? 'bg-neonGreen/10 border-neonGreen/30' : 'bg-dangerRed/10 border-dangerRed/30'}`}>
+                                <div class="flex justify-between items-start z-10">
+                                    <div>
+                                        <div class="text-[10px] uppercase tracking-widest font-bold text-gray-400">Status PJU Saat Ini</div>
+                                        <div class={`text-4xl font-black mt-1 ${isLampuOn ? 'text-neonGreen' : 'text-dangerRed'}`}>
+                                            LAMPU {statusLampuText}
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[10px] text-gray-400">Log Terakhir</div>
+                                        <div class="text-xs font-mono font-bold text-white bg-darkBg/50 px-2 py-1 rounded mt-1">{latestLog.firebaseTime || '--:--'}</div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex items-center gap-3 bg-darkBg/60 backdrop-blur rounded-xl p-3 z-10 border border-gray-800/50">
+                                    <i data-lucide="activity" class={`w-5 h-5 ${currentMode.color}`}></i>
+                                    <div>
+                                        <div class="text-[9px] uppercase text-gray-500 font-bold">Mode Sistem</div>
+                                        <div class={`text-xs font-bold ${currentMode.color}`}>{currentMode.text}</div>
+                                    </div>
+                                    <div class="ml-auto border-l border-gray-700 pl-3">
+                                        <div class="text-[9px] uppercase text-gray-500 font-bold">Panel Surya</div>
+                                        <div class="text-xs font-bold text-white">{latestLog.modeSheet || '-'}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Standard Metric Cards */}
+                            <MetricCard title="Tegangan Beban" value={latestLog.tegangan} unit="Volt" icon="zap" color="text-accentPurple" />
+                            <MetricCard title="Arus Beban" value={latestLog.arus} unit="Ampere" icon="move-right" color="text-accentBlue" />
+                            <MetricCard title="Daya Aktif" value={latestLog.daya} unit="Watt" icon="zap-off" color="text-amber-400" />
+                            
+                            <MetricCard title="Energi Hari Ini" value={analytics?.dailyEnergy || 0} unit="Wh" icon="battery-charging" color="text-neonGreen" />
+                            <MetricCard title="Intensitas LDR" value={latestLog.ldr} unit="Val" icon="sun" subtext={latestLog.ldr > 3000 ? 'Cerah' : 'Gelap'} color="text-white" />
+                            
+                            <div class="col-span-2 md:col-span-1 p-4 bg-darkCard rounded-3xl border border-gray-800/60 flex flex-col justify-center">
+                                <div class="flex justify-between items-center border-b border-gray-800 pb-2 mb-2">
+                                    <div class="flex items-center gap-2"><i data-lucide="sunrise" class="w-4 h-4 text-amber-500"></i> <span class="text-xs text-gray-400">Sunrise</span></div>
+                                    <div class="text-sm font-mono font-bold text-white">{latestLog.sunrise || '--:--'}</div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2"><i data-lucide="sunset" class="w-4 h-4 text-orange-500"></i> <span class="text-xs text-gray-400">Sunset</span></div>
+                                    <div class="text-sm font-mono font-bold text-white">{latestLog.sunset || '--:--'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* =========================================
+                            SECTION 2: GRAFIK INTERAKTIF (Recharts)
+                        ========================================== */}
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {/* Grafik Daya & Energi */}
+                            <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/50 fade-in">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-sm font-bold text-gray-300 flex items-center gap-2"><i data-lucide="trending-up" class="w-4 h-4 text-neonGreen"></i> Grafik Daya Beban (Watt)</h3>
+                                </div>
+                                <div class="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorDaya" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#C1FD11" stopOpacity={0.4}/>
+                                                    <stop offset="95%" stopColor="#C1FD11" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis dataKey="firebaseTime" stroke="#374151" fontSize={10} tickMargin={10} />
+                                            <YAxis stroke="#374151" fontSize={10} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                                            <Tooltip contentStyle={{ backgroundColor: '#111216', borderColor: '#374151', borderRadius: '12px', fontSize: '12px' }} />
+                                            <Area type="monotone" dataKey="daya" stroke="#C1FD11" strokeWidth={3} fillOpacity={1} fill="url(#colorDaya)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Grafik Tegangan & Arus (Dual Line) */}
+                            <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/50 fade-in">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-sm font-bold text-gray-300 flex items-center gap-2"><i data-lucide="activity" class="w-4 h-4 text-accentPurple"></i> Tegangan (V) & Arus (A)</h3>
+                                </div>
+                                <div class="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={filteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <XAxis dataKey="firebaseTime" stroke="#374151" fontSize={10} tickMargin={10} />
+                                            <YAxis yAxisId="left" stroke="#A855F7" fontSize={10} />
+                                            <YAxis yAxisId="right" orientation="right" stroke="#3B82F6" fontSize={10} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                                            <Tooltip contentStyle={{ backgroundColor: '#111216', borderColor: '#374151', borderRadius: '12px', fontSize: '12px' }} />
+                                            <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}/>
+                                            <Line yAxisId="left" type="monotone" dataKey="tegangan" name="Tegangan (V)" stroke="#A855F7" strokeWidth={2} dot={false} />
+                                            <Line yAxisId="right" type="monotone" dataKey="arus" name="Arus (A)" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                            
+                            {/* Grafik LDR */}
+                            <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/50 fade-in col-span-1 lg:col-span-2 h-64">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="text-sm font-bold text-gray-300 flex items-center gap-2"><i data-lucide="sun" class="w-4 h-4 text-amber-400"></i> Fluktuasi Intensitas LDR</h3>
+                                    <span class="text-[10px] text-gray-500">0 (Gelap) - 4095 (Cerah)</span>
+                                </div>
+                                <div class="h-48 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorLdr" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3}/>
+                                                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis dataKey="firebaseTime" stroke="#374151" fontSize={10} />
+                                            <YAxis stroke="#374151" fontSize={10} domain={[0, 4100]} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                                            <Tooltip contentStyle={{ backgroundColor: '#111216', borderColor: '#374151', borderRadius: '12px', fontSize: '12px' }} />
+                                            <Area type="step" dataKey="ldr" name="Nilai LDR" stroke="#F59E0B" strokeWidth={2} fillOpacity={1} fill="url(#colorLdr)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* =========================================
+                            SECTION 3: REKAPITULASI & LOKASI
+                        ========================================== */}
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            
+                            {/* Riwayat Lampu */}
+                            <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/50">
+                                <h3 class="text-sm font-bold text-white mb-4 border-b border-gray-800 pb-3 flex items-center gap-2"><i data-lucide="clock" class="text-accentBlue w-4 h-4"></i> Riwayat Lampu (Hari Ini)</h3>
+                                <div class="space-y-4">
+                                    <RowInfo label="Jam Lampu Menyala (Awal)" value={`${analytics?.jamMenyala || '-'} WIB`} />
+                                    <RowInfo label="Jam Lampu Mati (Akhir)" value={`${analytics?.jamMati || '-'} WIB`} />
+                                    <RowInfo label="Total Durasi Menyala" value={analytics?.durasiFormatted || '0j 0m'} valueClass="text-accentBlue font-bold" />
+                                    <RowInfo label="Estimasi Energi Terpakai" value={`${analytics?.dailyEnergy || 0} Wh`} valueClass="text-neonGreen font-bold font-mono" />
+                                </div>
+                            </div>
+
+                            {/* Rekap Harian */}
+                            <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/50">
+                                <h3 class="text-sm font-bold text-white mb-4 border-b border-gray-800 pb-3 flex items-center gap-2"><i data-lucide="bar-chart-2" class="text-accentPurple w-4 h-4"></i> Rekap Harian Analitik</h3>
+                                <div class="space-y-4">
+                                    <RowInfo label="Tanggal Data" value={selectedDate} />
+                                    <RowInfo label="Tegangan Rata-rata" value={`${analytics?.avgVolt || 0} V`} fontMono />
+                                    <RowInfo label="Arus Rata-rata" value={`${analytics?.avgAmp || 0} A`} fontMono />
+                                    <RowInfo label="Jumlah Siklus ON/OFF" value={`${analytics?.siklus || 0} Kali`} />
+                                </div>
+                            </div>
+
+                            {/* Informasi Lokasi */}
+                            <div class="bg-darkCard rounded-3xl p-5 border border-gray-800/50 flex flex-col">
+                                <h3 class="text-sm font-bold text-white mb-4 border-b border-gray-800 pb-3 flex items-center gap-2"><i data-lucide="map-pin" class="text-dangerRed w-4 h-4"></i> Informasi Lokasi Tiang</h3>
+                                <div class="flex-1 space-y-3">
+                                    <div>
+                                        <div class="text-[10px] text-gray-500 uppercase font-bold">Alamat Lengkap</div>
+                                        <div class="text-sm font-medium mt-1 text-gray-200">{latestLog.alamat || '-'}</div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 bg-darkBg p-3 rounded-xl border border-gray-800">
+                                        <div>
+                                            <div class="text-[9px] text-gray-500 uppercase font-bold">Latitude</div>
+                                            <div class="text-xs font-mono text-white mt-0.5">{latestLog.lat || '-'}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[9px] text-gray-500 uppercase font-bold">Longitude</div>
+                                            <div class="text-xs font-mono text-white mt-0.5">{latestLog.lon || '-'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a 
+                                    href={`https://www.google.com/maps/search/?api=1&query=${latestLog.lat},${latestLog.lon}`}
+                                    target="_blank" rel="noopener noreferrer"
+                                    class="mt-4 w-full bg-[#1A1C23] hover:bg-[#21242E] border border-gray-700 text-white text-sm font-bold py-3 rounded-xl transition flex items-center justify-center gap-2"
+                                >
+                                    <i data-lucide="external-link" class="w-4 h-4"></i> Buka di Google Maps
+                                </a>
+                            </div>
+
                         </div>
 
                     </main>
 
-                    {/* FOOTER BAR */}
-                    <footer class="mt-8 border-t border-gray-900 bg-darkBg/95 py-6 text-center text-xs text-gray-500">
-                        <p>© 2026 PJU Track Dashboard • Terkoneksi ke Google Sheets</p>
-                        <p class="text-[10px] text-gray-600 mt-1">Sistem Pemantauan Panel Surya PJU Dinamis</p>
+                    {/* Footer */}
+                    <footer class="mt-8 border-t border-gray-900 bg-darkBg py-6 text-center text-xs text-gray-500">
+                        <p>© 2026 PJU Track Enterprise Dashboard</p>
+                        <p class="text-[10px] text-gray-600 mt-1">Sistem Cerdas Pemantauan IoT</p>
                     </footer>
 
                 </div>
             );
         }
 
-        // Render React Application
+        // --- Micro Components ---
+        const MetricCard = ({ title, value, unit, icon, color = "text-white", subtext }) => (
+            <div class="bg-darkCard p-4 rounded-3xl border border-gray-800/60 relative overflow-hidden flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase leading-tight w-2/3">{title}</div>
+                    <div class="bg-darkCardSecondary p-1.5 rounded-lg border border-gray-800/80"><i data-lucide={icon} class={`w-4 h-4 ${color}`}></i></div>
+                </div>
+                <div>
+                    <div class={`text-2xl font-black font-mono ${color}`}>{value} <span class="text-xs font-sans font-medium text-gray-400">{unit}</span></div>
+                    {subtext && <div class="text-[9px] text-gray-500 mt-1 uppercase font-bold">{subtext}</div>}
+                </div>
+            </div>
+        );
+
+        const RowInfo = ({ label, value, valueClass = "text-white", fontMono = false }) => (
+            <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-400">{label}</span>
+                <span class={`text-sm ${valueClass} ${fontMono ? 'font-mono' : 'font-sans'}`}>{value}</span>
+            </div>
+        );
+
+        // Render Application
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
