@@ -97,7 +97,7 @@
             { waktu: "16/06/2026 10:16:00", status: "MATI", mode: "MANUAL", arus: 0, tegangan: 0, daya: 0, energi: 0, cuaca: "803", ldr: 4095, alamat: "Situs Uji B, Sukorejo", firebaseTime: "10:15" },
             { waktu: "16/06/2026 11:30:15", status: "AKTIF", mode: "MANUAL", arus: 1.10, tegangan: 11.5, daya: 12.65, energi: 4.2, cuaca: "801", ldr: 3200, alamat: "Situs Uji B, Sukorejo", firebaseTime: "11:30" },
             { waktu: "16/06/2026 12:00:00", status: "AKTIF", mode: "MANUAL", arus: 1.45, tegangan: 12.0, daya: 17.40, energi: 10.8, cuaca: "800", ldr: 4000, alamat: "Situs Uji B, Sukorejo", firebaseTime: "12:00" },
-            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "MANUAL", arus: 1.35, tegangan: 11.8, daya: 15.93, energi: 21.3, cuaca: "801", ldr: 3100, alamat: "Situs Uji B, Sukorejo", firebaseTime: "13:15" },
+            { waktu: "16/06/2026 13:15:30", status: "AKTIF", mode: "MANUAL", arus: 1.35, stroke: 11.8, daya: 15.93, energi: 21.3, cuaca: "801", ldr: 3100, alamat: "Situs Uji B, Sukorejo", firebaseTime: "13:15" },
             { waktu: "16/06/2026 14:30:22", status: "AKTIF", mode: "MANUAL", arus: 0.95, tegangan: 11.2, daya: 10.64, energi: 28.5, cuaca: "802", ldr: 1800, alamat: "Situs Uji B, Sukorejo", firebaseTime: "14:30" }
         ];
 
@@ -279,7 +279,7 @@
                             </div>
                             <div>
                                 <h1 class="font-extrabold text-xl tracking-tight flex items-center gap-1.5">
-                                    PJU Track <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.4</span>
+                                    PJU Track <span class="text-xs bg-[#21242E] text-neonGreen font-medium px-2 py-0.5 rounded-full border border-neonGreen/20">v1.5</span>
                                 </h1>
                                 <p class="text-xs text-gray-400">Sistem Tracker Penerangan Jalan Umum</p>
                             </div>
@@ -385,7 +385,7 @@
                             </div>
                         )}
 
-                        {/* MAIN ESTIMASI CARD (Identical style to Rp53.060.114 Aset widget) */}
+                        {/* MAIN ESTIMASI CARD */}
                         <div class="bg-darkCard rounded-[32px] p-7 border border-gray-800/80 shadow-2xl relative overflow-hidden">
                             {/* Abstract glowing backgrounds */}
                             <div class="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-neonGreen/10 blur-[50px] pointer-events-none"></div>
@@ -405,7 +405,7 @@
                                 {latestLog.daya !== undefined ? latestLog.daya : 0} <span class="text-2xl font-semibold text-neonGreen">W</span>
                             </div>
 
-                            {/* Mini runway indicator from image (9.9 Bulan box) */}
+                            {/* Mini runway indicator */}
                             <div class="mt-4 inline-flex items-center bg-darkCardSecondary/80 border border-gray-800 rounded-2xl px-3.5 py-2 gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-neonGreen flex items-center justify-center">
                                     <i data-lucide="battery-charging" class="w-4 h-4 text-darkBg stroke-[2.5]"></i>
@@ -418,7 +418,7 @@
                                 </div>
                             </div>
 
-                            {/* Current Level section (Target Berikutnya Rp42.000.000) */}
+                            {/* Current Level section (Target Berikutnya) */}
                             <div class="border-t border-gray-800/80 mt-6 pt-5 flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-9 h-9 rounded-full bg-[#21242E] flex items-center justify-center text-neonGreen border border-gray-700/60">
@@ -426,9 +426,11 @@
                                     </div>
                                     <div>
                                         <div class="text-[10px] text-gray-400 uppercase font-semibold leading-none">STATUS & MODE</div>
-                                        <div class="text-sm font-bold text-white mt-1 flex items-center gap-1.5">
-                                            {/* Updated: Status MATI is converted to 'Standby' */}
-                                            {latestLog.status === 'AKTIF' ? 'Aktif' : 'Standby'}
+                                        <div class="text-sm font-bold mt-1 flex items-center gap-1.5">
+                                            {/* Updated: Status MATI is converted directly to 'Mati' & AKTIF is 'Nyala' */}
+                                            <span class={latestLog.status === 'AKTIF' ? 'text-neonGreen' : 'text-red-500'}>
+                                                {latestLog.status === 'AKTIF' ? 'Nyala' : 'Mati'}
+                                            </span>
                                             <span class="text-xs font-medium text-gray-400">({latestLog.mode})</span>
                                         </div>
                                     </div>
@@ -456,7 +458,7 @@
                             </div>
                         </div>
 
-                        {/* THREE DYNAMIC ASSET CARDS (Sub-widgets like Dompet & Akun from design) */}
+                        {/* THREE DYNAMIC ASSET CARDS */}
                         <div class="grid grid-cols-2 gap-4">
                             
                             {/* Tegangan Card */}
@@ -652,9 +654,9 @@
                                             <div class="text-white font-semibold flex items-center gap-1.5">
                                                 <span>{item.daya} W</span>
                                                 <span class={`text-[8px] font-bold px-1.5 py-0.2 rounded-full ${
-                                                    item.status === 'AKTIF' ? 'bg-neonGreen/10 text-neonGreen' : 'bg-gray-800 text-gray-400'
+                                                    item.status === 'AKTIF' ? 'bg-neonGreen/10 text-neonGreen' : 'bg-red-500/10 text-red-400'
                                                 }`}>
-                                                    {item.status === 'AKTIF' ? 'Aktif' : 'Standby'}
+                                                    {item.status === 'AKTIF' ? 'Nyala' : 'Mati'}
                                                 </span>
                                             </div>
                                             <div class="text-[9px] text-gray-500 font-mono">{item.waktu}</div>
